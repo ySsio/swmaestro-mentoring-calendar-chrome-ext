@@ -1,4 +1,5 @@
 (() => {
+  console.log('loaded v2');error
   const HISTORY_URL = 'https://swmaestro.ai/sw/mypage/userAnswer/history.do?menuNo=200047';
   const CACHE_KEY   = 'swm_lectures';
 
