@@ -1,6 +1,5 @@
 (() => {
-  console.log('loaded v2');error
-  const HISTORY_URL = 'https://swmaestro.ai/sw/mypage/userAnswer/history.do?menuNo=200047';
+  const HISTORY_URL = 'https://www.swmaestro.ai/sw/mypage/userAnswer/history.do?menuNo=200047';
   const CACHE_KEY   = 'swm_lectures';
 
   // ── 1. 파싱 ────────────────────────────────────────────────────
@@ -9,9 +8,9 @@
     doc.querySelectorAll('.boardlist table tbody tr').forEach(row => {
       const cells = row.querySelectorAll('td');
       if (cells.length < 7) return;
-      if (cells[6].innerText.trim() !== '접수완료') return;
+      if (cells[6].textContent.trim() !== '접수완료') return;
 
-      const rawDate = cells[4].innerText.trim();
+      const rawDate = cells[4].textContent.trim();
       const dateMatch = rawDate.match(/(\d{4}-\d{2}-\d{2})/);
       const timeMatch = rawDate.match(/(\d{1,2}:\d{2}):\d{2}\s*~\s*(\d{1,2}:\d{2}):\d{2}/);
       if (!dateMatch) return;
@@ -20,10 +19,10 @@
       lectures.push({
         date:   dateMatch[1],
         time:   timeMatch ? `${timeMatch[1]} ~ ${timeMatch[2]}` : '',
-        title:  titleEl ? titleEl.innerText.trim() : '(제목 없음)',
+        title:  titleEl ? titleEl.textContent.trim() : '(제목 없음)',
         href:   titleEl ? titleEl.href : '#',
-        type:   cells[1].innerText.trim(),
-        author: cells[3].innerText.trim(),
+        type:   cells[1].textContent.trim(),
+        author: cells[3].textContent.trim(),
       });
     });
     return lectures;
@@ -52,6 +51,11 @@
       lectures.push(...parseRows(doc));
     }
 
+    const timeToMin = t => { const m = t.match(/^(\d{1,2}):(\d{2})/); return m ? Number(m[1]) * 60 + Number(m[2]) : 0; };
+    lectures.sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+      return timeToMin(a.time) - timeToMin(b.time);
+    });
     sessionStorage.setItem(CACHE_KEY, JSON.stringify(lectures));
     return lectures;
   }
