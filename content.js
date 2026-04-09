@@ -9,6 +9,7 @@
       const cells = row.querySelectorAll('td');
       if (cells.length < 7) return;
       if (cells[6].textContent.trim() !== '접수완료') return;
+      if (cells[8].textContent.trim() === '삭제') return;
 
       const rawDate = cells[4].textContent.trim();
       const dateMatch = rawDate.match(/(\d{4}-\d{2}-\d{2})/);
