@@ -7,7 +7,7 @@
     const lectures = [];
     doc.querySelectorAll('.boardlist table tbody tr').forEach(row => {
       const cells = row.querySelectorAll('td');
-      if (cells.length < 7) return;
+      if (cells.length < 9) return;
       if (cells[6].textContent.trim() !== '접수완료') return;
       if (cells[8].textContent.trim() === '삭제') return;
 
@@ -37,18 +37,23 @@
     }
 
     const lectures = [];
-    const firstRes  = await fetch(HISTORY_URL + '&pageIndex=1', { credentials: 'include' });
-    const firstHtml = await firstRes.text();
-    const firstDoc  = new DOMParser().parseFromString(firstHtml, 'text/html');
-    lectures.push(...parseRows(firstDoc));
+    const MAX_PAGES = 500;
+    let prevFirstHref = null;
 
-    const endEl    = firstDoc.querySelector('.pagination .i.end a');
-    const lastPage = endEl ? parseInt(endEl.dataset.endpage || '1', 10) : 1;
-
-    for (let p = 2; p <= lastPage; p++) {
+    for (let p = 1; p <= MAX_PAGES; p++) {
       const res  = await fetch(HISTORY_URL + `&pageIndex=${p}`, { credentials: 'include' });
       const html = await res.text();
       const doc  = new DOMParser().parseFromString(html, 'text/html');
+
+      const rows = doc.querySelectorAll('.boardlist table tbody tr');
+      const dataRows = Array.from(rows).filter(r => r.querySelectorAll('td').length >= 9);
+      if (dataRows.length === 0) break;
+
+      // 범위 초과 시 서버가 마지막 페이지를 그대로 반환하는 경우 대비
+      const firstHref = dataRows[0].querySelector('a')?.href || null;
+      if (firstHref && firstHref === prevFirstHref) break;
+      prevFirstHref = firstHref;
+
       lectures.push(...parseRows(doc));
     }
 
@@ -57,7 +62,12 @@
       if (a.date !== b.date) return a.date < b.date ? -1 : 1;
       return timeToMin(a.time) - timeToMin(b.time);
     });
-    sessionStorage.setItem(CACHE_KEY, JSON.stringify(lectures));
+
+    try {
+      sessionStorage.setItem(CACHE_KEY, JSON.stringify(lectures));
+    } catch (e) {
+      console.warn('[소마 달력] 캐시 저장 실패:', e);
+    }
     return lectures;
   }
 
