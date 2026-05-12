@@ -1,5 +1,5 @@
 (() => {
-  const HISTORY_URL = 'https://www.swmaestro.ai/sw/mypage/userAnswer/history.do?menuNo=200047';
+  const HISTORY_URL = `${location.origin}/sw/mypage/userAnswer/history.do?menuNo=200047`;
   const CACHE_KEY   = 'swm_lectures';
 
   // ── 1. 파싱 ────────────────────────────────────────────────────
